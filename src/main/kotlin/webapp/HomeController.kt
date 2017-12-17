@@ -11,7 +11,7 @@ class HomeController {
     @RequestMapping("/")
     fun home(model: Model, @RequestParam(value = "name", required = false, defaultValue = "World") name: String): String {
         model.addAttribute("name", name)
-        return "hello"
+        return "home"
     }
 
 
