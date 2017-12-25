@@ -10,6 +10,7 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-allopen:$kotlin_version" // See https://kotlinlang.org/docs/reference/compiler-plugins.html#kotlin-spring-compiler-plugin
         classpath "org.springframework.boot:spring-boot-gradle-plugin:$spring_boot_version"
         classpath "org.junit.platform:junit-platform-gradle-plugin:$junit_version"
+        classpath "org.junit.platform:junit-platform-runner:${junit_version}"
     }
 }
 
@@ -40,7 +41,9 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version" // Required for Kotlin integration
     compile 'org.springframework.boot:spring-boot-starter-web'
     compile 'org.springframework.boot:spring-boot-starter-thymeleaf'
-    compile("org.springframework.boot:spring-boot-devtools")
+    compile "org.springframework.boot:spring-boot-devtools"
+    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    compile group: 'com.rometools', name: 'rome', version: '1.7.1'
     testCompile 'org.springframework.boot:spring-boot-starter-test'
     testCompile 'org.jetbrains.spek:spek-api:1.1.5'
     testRuntime 'org.jetbrains.spek:spek-junit-platform-engine:1.1.5'
