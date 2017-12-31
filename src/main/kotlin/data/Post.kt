@@ -1,3 +1,3 @@
 package data
 
-data class Post(val title: String)
+data class Post(val title: String, val preview: String = "")
