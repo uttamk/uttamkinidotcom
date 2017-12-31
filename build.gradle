@@ -30,6 +30,14 @@ junitPlatform {
 jar {
     baseName = 'uttamkinidotcom'
     version = '0.1.0'
+    from {
+        (configurations.runtime).collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    manifest {
+        attributes("Main-Class": "webapp.ApplicationKt" )
+    }
 }
 
 repositories {
