@@ -9,5 +9,5 @@ fun parseFeed(inputStream: InputStream?): List<Post> {
 
     val feed = SyndFeedInput().build(XmlReader(inputStream))
 
-    return feed.entries.map { entry -> Post(title = entry.title, preview = "foo") }
+    return feed.entries.map { entry -> Post(title = entry.title, preview = "foo", content = "") }
 }
