@@ -51,6 +51,7 @@ dependencies {
     compile 'org.springframework.boot:spring-boot-starter-thymeleaf'
     compile "org.springframework.boot:spring-boot-devtools"
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    compile 'com.beust:klaxon:0.30'
     testCompile 'org.springframework.boot:spring-boot-starter-test'
     testCompile 'org.jetbrains.spek:spek-api:1.1.5'
     testRuntime 'org.jetbrains.spek:spek-junit-platform-engine:1.1.5'

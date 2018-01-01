@@ -1,0 +1,109 @@
+<p>In Scaling Redux part 1 and 2, I talked about how codebase and state architecture impacts complex applications. This
+    post is about some other common problems that you encounter when your Redux codebase grows. </p>",
+content = "<p name=\"deae\" id=\"deae\" class=\"graf graf--p graf-after--h3\">In Scaling Redux <a
+        href=\"https://medium.com/@uttamkini/scaling-redux-part-1-codebase-organization-80f978cd8a72\"
+        data-href=\"https://medium.com/@uttamkini/scaling-redux-part-1-codebase-organization-80f978cd8a72\"
+        class=\"markup--anchor markup--p-anchor\" target=\"_blank\">part 1</a> <a
+        href=\"https://medium.com/@uttamkini/scaling-redux-part-2-organizing-state-8a1c5e8fffbf\"
+        data-href=\"https://medium.com/@uttamkini/scaling-redux-part-2-organizing-state-8a1c5e8fffbf\"
+        class=\"markup--anchor
+        markup--p-anchor\" target=\"_blank\">and 2</a>, I talked about how codebase and state architecture impacts complex applications. This post is about some other common problems that you encounter when your Redux codebase grows.</p>
+<h4 name=\"ac22\" id=\"ac22\" class=\"graf graf--h4 graf-after--p\">Eliminate Switch Case&nbsp;Fatigue</h4><p
+        name=\"5e67\" id=\"5e67\" class=\"graf graf--p
+        graf-after--h4\">Redux’s benefits of one way data flow, time travelling debugging etc come at a cost of more abstractions (to remember and type). One common example is the oft repeated switch case statements in reducers which look like the following</p>
+<pre name=\"019e\" id=\"019e\" class=\"graf graf--pre graf-after--p\"><strong class=\"markup--strong
+                                                                              markup--pre-strong\">const </strong>reducer =
+<strong class=\"markup--strong markup--pre-strong\">function</strong>(state, action) {
+<br>    state = state || defaultState;<br>    <strong class=\"markup--strong
+                                                      markup--pre-strong\">switch </strong>(action.<strong
+        class=\"markup--strong markup--pre-strong\">type</strong>) {<br>        <strong class=\"markup--strong
+                                                                                        markup--pre-strong\">case </strong>ACTION_1:
+<br>            <strong class=\"markup--strong markup--pre-strong\">return {... state, {\"foo\": \"bar\"}};</strong><br>
+<strong class=\"markup--strong markup--pre-strong\">case </strong>ACTION_2:<br>            <strong
+        class=\"markup--strong markup--pre-strong\">return </strong> <strong class=\"markup--strong
+                                                                             markup--pre-strong\">return {... state, {\"zoo\": \"zaz\"}}
+<br>        <br>        ...<br>        ...</strong></pre>
+<pre name=\"356f\" id=\"356f\" class=\"graf graf--pre graf-after--pre\">        <strong class=\"markup--strong
+                                                                                        markup--pre-strong\">default</strong>:
+<br>            <strong class=\"markup--strong markup--pre-strong\">return </strong>state;<br>    }</pre><p
+        name=\"6213\" id=\"6213\" class=\"graf graf--p
+        graf-after--pre\">The switch case statement is a hangover of sample code and tutorial apps. Though easy to read at first glance, it is a line too many to type and by extension mistype. Mistypes can create subtle defects that take a long time to debug.</p>
+<p name=\"36af\" id=\"36af\" class=\"graf graf--p graf-after--p\">If we write a wrapper reducer function like</p>
+<pre name=\"1c51\" id=\"1c51\" class=\"graf graf--pre graf-after--p\"><strong class=\"markup--strong
+                                                                              markup--pre-strong\">const </strong>declarativeReducer = (defaultState, config) =&gt; {
+<em class=\"markup--em markup--pre-em\"><br>    </em><strong class=\"markup--strong
+                                                             markup--pre-strong\">return </strong>(state, action) =&gt; {
+<br>        state = state || defaultState;<br>        action = action || {<strong class=\"markup--strong
+                                                                                  markup--pre-strong\">type</strong>:
+<strong class=\"markup--strong markup--pre-strong\">null</strong>};<br><br>        <strong class=\"markup--strong
+                                                                                           markup--pre-strong\">const </strong>handler = config[action.
+<strong class=\"markup--strong markup--pre-strong\">type</strong>] || (() =&gt; (state));<br>        <strong
+        class=\"markup--strong markup--pre-strong\">return </strong>handler(state, action.<strong class=\"markup--strong
+                                                                                                  markup--pre-strong\">payload</strong>);
+<br>    };<br>};</pre><p name=\"4d30\" id=\"4d30\" class=\"graf graf--p
+                         graf-after--pre\">then the above reducer becomes,</p>
+<pre name=\"285d\" id=\"285d\" class=\"graf graf--pre graf-after--p\"><strong class=\"markup--strong
+                                                                              markup--pre-strong\">const </strong>reducer = declarativeReducer(defaultState, {
+<br>        [ACTION_1]: (state, payload) =&gt; <strong class=\"markup--strong
+                                                       markup--pre-strong\"> {... state, {\"foo\":\"bar\"}}</strong>,
+<br>        [ACTION_2]: (state, payload) =&gt;  <strong class=\"markup--strong
+                                                        markup--pre-strong\">{... state, {\"zoo\": \"zaz\"}}</strong>
+<br>      });</pre><p name=\"6e74\" id=\"6e74\" class=\"graf graf--p
+                      graf-after--pre\">As you can see the reducer is now declarative and you just have to type in only as much as it is really required to handle the action.</p>
+<h4 name=\"3045\" id=\"3045\" class=\"graf graf--h4 graf-after--p\">Namespace your Action&nbsp;Types</h4><p
+        name=\"1d59\" id=\"1d59\" class=\"graf graf--p
+        graf-after--h4\">As you grow your codebase, you will have a lot of actions and action types. There is a chance that you may have duplicate action names. This can be quite disastrous and can get your app into an inconsistent state if a wrong subtree is updated unintentionally. The solution to this is quite simple though. Namespace your action types with the ‘Ducks’ that they reside in. for example for an action to Fetch orders that lies in
+<code class=\"markup--code markup--p-code\">data/OrderDuck.js</code>&nbsp;, name it <code class=\"markup--code
+                                                                                          markup--p-code\">DATA_ORDER_FETCH_ORDER</code>&nbsp;. You can choose your own convention, as long as it is hard to duplicate action types.</p>
+<h4 name=\"75e1\" id=\"75e1\" class=\"graf graf--h4 graf-after--p\">Have a large number of small Reducers/Ducks</h4><p
+        name=\"dcc3\" id=\"dcc3\" class=\"graf graf--p
+        graf-after--h4\">One other anti-pattern that I encountered was the God Reducer/God Duck akin to the <a
+        href=\"https://en.wikipedia.org/wiki/God_object\" data-href=\"https://en.wikipedia.org/wiki/God_object\"
+        class=\"markup--anchor
+        markup--p-anchor\" rel=\"noopener\" target=\"_blank\">God Object</a> pattern. A lot of actions and reducer logic starts going into one file or abstraction. To overcome this, make sure that you keep your Ducks as small as possible. One smell that you haven’t done this enough is when you haven’t used
+<code class=\"markup--code
+      markup--p-code\">combineReducers</code> a lot in your codebase. If you follow the directory and state structure as described in Scaling Redux
+<a href=\"https://medium.com/@uttamkini/scaling-redux-part-1-codebase-organization-80f978cd8a72\"
+   data-href=\"https://medium.com/@uttamkini/scaling-redux-part-1-codebase-organization-80f978cd8a72\"
+   class=\"markup--anchor markup--p-anchor\" target=\"_blank\">part 1</a> <a
+        href=\"https://medium.com/@uttamkini/scaling-redux-part-2-organizing-state-8a1c5e8fffbf\"
+        data-href=\"https://medium.com/@uttamkini/scaling-redux-part-2-organizing-state-8a1c5e8fffbf\"
+        class=\"markup--anchor
+        markup--p-anchor\" target=\"_blank\">and 2</a>, then it is quite intuitive to have small reducers composed in hierarchy like the following,</p>
+<pre name=\"9eec\" id=\"9eec\" class=\"graf graf--pre graf-after--p\"><strong class=\"markup--strong
+                                                                              markup--pre-strong\">const </strong>appReducer = combineReducers({
+<br>    <strong class=\"markup--strong markup--pre-strong\">data</strong>: dataReducer,<br>    <strong
+        class=\"markup--strong markup--pre-strong\">ui</strong>: uiReducer<br>});</pre>
+<pre name=\"5b2a\" id=\"5b2a\" class=\"graf graf--pre graf-after--pre\"><strong class=\"markup--strong
+                                                                                markup--pre-strong\">const </strong>uiReducer = combineReducers({
+<br>    <strong class=\"markup--strong markup--pre-strong\">headerReducer</strong>: HeaderReducer,<br>    <strong
+        class=\"markup--strong markup--pre-strong\">bodyReducer:</strong> BodyReducer,<br>    <strong
+        class=\"markup--strong markup--pre-strong\">sideBarReducer:</strong> SideBarReducer<br>});</pre>
+<pre name=\"d1fa\" id=\"d1fa\" class=\"graf graf--pre graf-after--pre\"><strong class=\"markup--strong
+                                                                                markup--pre-strong\">const </strong>dataReducer = combineReducers({
+<br>    <strong class=\"markup--strong markup--pre-strong\">orderDataReducer</strong>: orderDataReducer,<br>    <strong
+        class=\"markup--strong markup--pre-strong\">userDataReducer:</strong> userDataReducer,<br>    <strong
+        class=\"markup--strong markup--pre-strong\">accountDataReducer:</strong> accountDataReducer<br>});</pre><h4
+        name=\"de89\" id=\"de89\" class=\"graf graf--h4
+        graf-after--pre\">Resetting State is as important as setting&nbsp;it</h4><p name=\"280f\" id=\"280f\"
+                                                                                    class=\"graf graf--p
+                                                                                    graf-after--h4\">When you start programming in Redux,resetting state is something you don’t worry about too much. However, interesting bugs will show up if you don’t reset your state well after significant actions like a route transition. It is usually UI state that you want to reset (you don’t want a dropdown expanded when a user comes to a new page). If you have separated UI state from the data state as described in
+<a href=\"https://medium.com/@uttamkini/scaling-redux-part-2-organizing-state-8a1c5e8fffbf\"
+   data-href=\"https://medium.com/@uttamkini/scaling-redux-part-2-organizing-state-8a1c5e8fffbf\" class=\"markup--anchor
+   markup--p-anchor\" target=\"_blank\">Scaling redux part 2</a>, then it is quite easy to reset UI state. You just have write a wrapper function/reducer over an existing UI subtree reducer like the following.</p>
+<pre name=\"b7bb\" id=\"b7bb\" class=\"graf graf--pre graf-after--p\"><strong class=\"markup--strong
+                                                                              markup--pre-strong\">const </strong>resettableReducer = (targetReducer, resetActionType) =&gt; {</pre>
+<pre name=\"450c\" id=\"450c\" class=\"graf graf--pre graf-after--pre\"><em class=\"markup--em
+                                                                            markup--pre-em\">    </em><strong
+        class=\"markup--strong markup--pre-strong\">return </strong>(state, action) =&gt; {<br>      state = action.
+<strong class=\"markup--strong markup--pre-strong\">type </strong>=== resetActionType ? <strong class=\"markup--strong
+                                                                                                markup--pre-strong\">undefined </strong>: state;</pre>
+<pre name=\"0d8f\" id=\"0d8f\" class=\"graf graf--pre graf-after--pre\">      <strong class=\"markup--strong
+                                                                                      markup--pre-strong\">const </strong>nextState = targetReducer(state, action);
+<br>      <strong class=\"markup--strong markup--pre-strong\">return </strong>nextState;<br>    };<br>};</pre>
+<pre name=\"f7b9\" id=\"f7b9\" class=\"graf graf--pre graf-after--pre\">/* Usage */
+<br>resettableReducer(reducerWithRouteState,ROUTE_TRANSITION_ACTION)</pre><p name=\"cda7\" id=\"cda7\" class=\"graf
+                                                                             graf--p
+                                                                             graf-after--pre\">In the above example, whenever a `ROUTE_TRANSITION_ACTION` happens, all the state in `reducerWithRouteState` will be reset to the default state. If you have mixed your UI and data state trees, resetting state will get messy.</p>
+<p name=\"97dd\" id=\"97dd\" class=\"graf graf--p graf-after--p
+   graf--trailing\">That ends this post and mostly probably the series on Scaling Redux(unless I remember more stuff). My biggest takeaway after writing these posts, is that with complexity moving towards the front end, just using a framework is not enough. You need to have a solid technical architecture under the hood.</p>
