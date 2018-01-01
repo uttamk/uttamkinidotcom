@@ -11,9 +11,9 @@ class PostController {
 
     @RequestMapping("/posts/{title}")
     fun post(model: Model, @PathVariable(value = "title") title: String): String {
-        val posts = getPostList()
-        val post = posts.find { p -> p.urlFriendlyTitle == title }
-        model.addAttribute("post", post)
+        val postModels = getPostList().map { post -> PostViewModel(post) }
+        val postModel = postModels.find { post -> post.urlFriendlyTitle == title }
+        model.addAttribute("post", postModel)
         return "post"
     }
 
