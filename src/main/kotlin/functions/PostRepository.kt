@@ -12,7 +12,7 @@ fun getPostList(): List<Post> {
             as JsonArray<JsonObject>
     return postsJson.map { json ->
         val title = json.string("title")!!
-        val contentFileName = "/posts/${title.toLowerCase().replace(' ', '-')}.html"
+        val contentFileName = "/posts/${urlFriendlyFormat(title)}.html"
         val content = postCls.getResource(contentFileName).readText()
 
         Post(title = title, preview = json.string("preview")!!, content = content)
