@@ -12,7 +12,7 @@ class PostRepositoryTest : Spek({
             val posts = getPostList()
 
             it("should get the correct number of posts") {
-                Assert.assertEquals(posts.count(), 2)
+                Assert.assertEquals(posts.count(), 4)
             }
             describe("post data") {
                 val firstPost = posts.first()

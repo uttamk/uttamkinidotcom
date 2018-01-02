@@ -1,0 +1,118 @@
+<p name="c98e" id="c98e" class="graf graf--p graf-after--h3">Building mobile apps is not a side
+    dish anymore, it has become a part of the main course for businesses. Hybrid mobile apps (Javascript + Native) tick
+    more proverbial checkboxes than pure native apps as far as a sales pitch is concerned for non graphics/game apps.
+    The hybrid supporters will tell you to go read <a
+            href="http://venturebeat.com/2012/05/02/linkedin-ipad-app-engineering/"
+            data-href="http://venturebeat.com/2012/05/02/linkedin-ipad-app-engineering/"
+            class="markup--anchor markup--p-anchor" title="how linked rocked with a hybrid strategy" rel="noopener"
+            target="_blank">how linkedin rocked with a hybrid strategy</a>.</p><p name="4902" id="4902"
+                                                                                  class="graf graf--p graf-after--p">
+    <strong class="markup--strong markup--p-strong">On paper</strong> hybrid mobile apps let you</p><p name="f9e1"
+                                                                                                       id="f9e1"
+                                                                                                       class="graf graf--p graf-after--p">
+    1. Write once deploy on multiple platforms (heard that somewhere before in the 90s).</p><p name="dfcd" id="dfcd"
+                                                                                               class="graf graf--p graf-after--p">
+    2. Leverage the existing talent of JavaScript developers (there are more web developers than native developers)</p>
+<p name="eba0" id="eba0" class="graf graf--p graf-after--p">3. Share the JavaScript code with the web based version of
+    the app.</p><p name="fe90" id="fe90" class="graf graf--p graf-after--p">I thought so too when I embarked on my first
+    hybrid app (first mobile app for that matter) for which I was getting paid. After finishing the project, my answer
+    has changed to ‘it depends’. Here’s why.</p><p name="b5f3" id="b5f3" class="graf graf--p graf-after--p">When we
+    started the project, our aim was to build it as much as possible in JavaScript. We chose <a
+            href="http://emberjs.com/" data-href="http://emberjs.com/" class="markup--anchor markup--p-anchor"
+            title="ember.js" rel="noopener" target="_blank">Ember.js</a> as the client side MVC framework and<a
+            href="http://cordova.apache.org/" data-href="http://cordova.apache.org/"
+            class="markup--anchor markup--p-anchor" rel="noopener" target="_blank"> apache Cordova (previously
+        phonegap)</a> as the bridge between the Web view and the Native runtime (which was ios). To write better
+    JavaScript code we added a healthy dash of state of the art JS libraries (<a href="http://requirejs.org/"
+                                                                                 data-href="http://requirejs.org/"
+                                                                                 class="markup--anchor markup--p-anchor"
+                                                                                 title="require.js" rel="noopener"
+                                                                                 target="_blank">require.js</a>, <a
+            href="https://github.com/kriskowal/q" data-href="https://github.com/kriskowal/q"
+            class="markup--anchor markup--p-anchor" title="q.js" rel="noopener" target="_blank">q.js</a>, <a
+            href="http://underscorejs.org/" data-href="http://underscorejs.org/" class="markup--anchor markup--p-anchor"
+            title="underscore.js" rel="noopener" target="_blank">underscore.js</a>, <a
+            href="http://visionmedia.github.io/mocha/" data-href="http://visionmedia.github.io/mocha/"
+            class="markup--anchor markup--p-anchor" title="mocha" rel="noopener" target="_blank">mocha for testing</a>).
+    To top it, we used <a href="http://nodejs.org/" data-href="http://nodejs.org/"
+                          class="markup--anchor markup--p-anchor" title="node.js" rel="noopener"
+                          target="_blank">Node.js</a> on the server side and added some serious Html 5 love in the form
+    of <a href="http://www.w3.org/TR/webdatabase/" data-href="http://www.w3.org/TR/webdatabase/"
+          class="markup--anchor markup--p-anchor" title="websql" rel="noopener" target="_blank">WebSql</a> as our
+    database. All the above frameworks and libraries are awesome in their own ways, but it had an unforeseen
+    consequence. For most developers in the team, it was a fairly steep learning curve. JavaScript is a very powerful
+    language, but it also not statically typed like a Java/Objective C is. Minute spelling mistakes mean rework, however
+    small and they all add up to the throughput. Since our database was also handled from JavaScript, it meant more
+    async programming. <a href="https://github.com/kriskowal/q" data-href="https://github.com/kriskowal/q"
+                          class="markup--anchor markup--p-anchor" title="q.js" rel="noopener" target="_blank">Q.js</a>
+    is a great library which helps you write readable and maintainable async code. For people used to imperative
+    programming, it takes some time get adjusted to it’s idioms. <a href="http://emberjs.com/"
+                                                                    data-href="http://emberjs.com/"
+                                                                    class="markup--anchor markup--p-anchor"
+                                                                    title="ember.js" rel="noopener" target="_blank">Ember.js</a>
+    is also a very powerful MVC framework, but again it has a steeper learning curve compared to a lot of MVC
+    frameworks. All these factors meant that we couldn’t churn stories out as fast as we had estimated initially. If we
+    hadn’t used all the above libraries and frameworks, our code would have looked like how most JS codebases look;
+    Spaghetti. The sales pitch for the hybrid app didn’t consider the team’s skill sets/experience with languages,
+    frameworks and how it can be a bigger factor in estimation than Native vs Hybrid is.</p><p name="7bfc" id="7bfc"
+                                                                                               class="graf graf--p graf-after--p">
+    After a while we did get productive, but then there was another snake waiting to bite us. The snake of memory leaks.
+    We noticed that app crashed when we used iframes. After some trial and error, we found that it was because, the
+    iframe’s src was not set and Cordova didn’t like it. Setting it to something fixed the crash. One problem fixed. A
+    month later however, we figured that app leaked memory (5–10 MB) for one user interaction. Again after a couple of
+    days found out from Xcode’s memory profiler that the sqlite library was leaking memory. This was apparently because
+    the websql api has a method to open a connection, but none to close it. So every db call was leaking memory. The fix
+    here was to have the db connection object as a singleton. The leak came down from 10 MB to 5 MB. There still was a
+    huge leak and not fixing it meant getting rejected by the app store. Xcode’s memory profiler didn’t show the leak.
+    It turns out the UIWebView/WebKit is unmanaged code and hence doesn’t show up on the profiler. Unlike the inspector
+    on chrome, the one on Safari didn’t let us profile the javascript memory, so it was just guess work. After spending
+    a really long time trying, we figured that upgrading to iOs 6.1 fixed the leak and guess what the iframe src hack
+    wasn’t needed as well. We had won the performance battle, but the casualty was around two months of trial and error
+    dev effort give or take. Since it came at such an advanced stage of the app development, <a
+        href="http://en.wikipedia.org/wiki/Sunk_costs" data-href="http://en.wikipedia.org/wiki/Sunk_costs"
+        class="markup--anchor markup--p-anchor" title="sunk costs fallacy" rel="noopener" target="_blank">sunk costs
+    fallacy prevented</a> us from a rewrite.</p><p name="66f6" id="66f6" class="graf graf--p graf-after--p">The business
+    did not want an android app as of then, but we gave it a try nevertheless to validate our assumptions. It took us a
+    couple of days to get the basic stuff running. There were however a lot of niggling bugs around the DOM and
+    JavaScript. A hybrid is most certainly not a write once, run anywhere. It takes a lot of fine tuning for specific
+    platforms. It is certainly nowhere near Java’s platform independence. Sharing code for domain logic is certainly
+    possible across platforms, but then designing the JavaScript code with the right abstractions is a must. If you
+    couple the domain objects/logic with the UI, then porting to other platforms becomes harder. Fortunately, we had
+    this one covered, so we ended up with fewer issues.</p><p name="2aeb" id="2aeb" class="graf graf--p graf-after--p">
+    The other lesser challenge we faced was getting the app to look like a native app. This meant time spent designing
+    and iterating on not only the style sheets, but also the user interactions and app transitions like a native app.
+    For a pure native app, there is no such effort because the styles and transitions come out of the box. The bigger
+    catch being that customising the app for another platform means more work. So much for platform independence.</p><p
+        name="0076" id="0076" class="graf graf--p graf-after--p">At various points in time, we felt that going native
+    was the easier option, but then we had put our minds to JavaScript and more native meant more rework during porting.
+    So we stuck to our hybrid guns. Now in hindsight, it feels that we spent more time debugging and fixing very very
+    hard issues. All that time and money could have been saved if we went native even for parts of the application which
+    had the hard problems like the memory leaks. We had around 90 percent JS code and 10 percent native code. Maybe a
+    70:30 ratio could have saved some time and money (again it is an educated guess).</p><p name="34e0" id="34e0"
+                                                                                            class="graf graf--p graf-after--p">
+    <strong class="markup--strong markup--p-strong">The Moral of the story</strong>:</p><p name="3018" id="3018"
+                                                                                           class="graf graf--p graf-after--p">
+    1. Hybrid apps are not exactly platform independent. It takes some time to port them, depending on the UI
+    complexity.</p><p name="590d" id="590d" class="graf graf--p graf-after--p">2. Traditional JavaScript developers can
+    never get productive right away and churn out a native style JS app.</p><p name="2c1b" id="2c1b"
+                                                                               class="graf graf--p graf-after--p">3.
+    Code Sharing can be done amongst platforms, only if you design your abstractions right.</p><p name="cf40" id="cf40"
+                                                                                                  class="graf graf--p graf-after--p">
+    4. The tools for profiling and debugging hybrid apps are non existent or not good enough (at least for now on
+    iOS)</p><p name="dda5" id="dda5" class="graf graf--p graf-after--p">If you read the previous link on <a
+        href="http://venturebeat.com/2012/05/02/linkedin-ipad-app-engineering/"
+        data-href="http://venturebeat.com/2012/05/02/linkedin-ipad-app-engineering/"
+        class="markup--anchor markup--p-anchor" title="how cool hybrids were at Linkedin last year" rel="noopener"
+        target="_blank">how cool hybrids were at Linkedin last year</a>, then also read <a
+        href="http://venturebeat.com/2013/04/17/linkedin-mobile-web-breakup/"
+        data-href="http://venturebeat.com/2013/04/17/linkedin-mobile-web-breakup/"
+        class="markup--anchor markup--p-anchor" title="why linked dumped html5 and went native" rel="noopener"
+        target="_blank">why Linkedin dumped Html5 and went native this year</a>. Looks like the guys at Linkedin had
+    similar issues.</p><p name="aa9f" id="aa9f" class="graf graf--p graf-after--p">Having said all that, it is a great
+    strategy to start your app as a hybrid (only if you are really targeting multiple platforms). If you have great
+    JavaScript and css guys and if you design your code well, then the chances are that you may tick all the proverbial
+    as well as real checkboxes. The more harder and subtler calls which you will have to take are, ‘when is a problem
+    hard/complex enough (because we are spending too much time on it), so that we can explore native options’.
+    Ultimately it is not about about the JS code to native code ratio, but about getting the app out as fast as
+    possible, because the mobile app ecosystem moves much faster than the traditional server side ecosystem. You better
+    put it out fast, or else somebody else will.</p>

@@ -6,5 +6,29 @@
   {
     "title": "Scaling Redux part 3: Reducing Boilerplate and other stories",
     "preview": "<p>In Scaling Redux part 1 and 2, I talked about how codebase and state architecture impacts complex applications. This post is about some other common problems that you encounter when your Redux codebase grows.</p>"
+  },
+  {
+    "title": "Scaling Redux part 2: Organizing State",
+    "preview": "In Scaling Redux part 1, I described how codebase organization by UI structure can help for a complex app. This post will focus on another…"
+  },
+  {
+    "title": "Scaling Redux part 1: Codebase Organization",
+    "preview": "React and Redux have radically changed the way we look at front end development. These frameworks encourage you to write code in a certain way."
+  },
+  {
+    "title": "The Best Android Watch Face for Productivity",
+    "preview": "I am a gmail user since 2005 and have been using Android since 2011. I also use the Moto 360"
+  },
+  {
+    "title": "Now I am reading books more than ever",
+    "preview": "It’s been three months now and I have read more books than what I did in the last one year before that&nbsp;. There are a couple of reasons why"
+  },
+  {
+    "title": "Pair Programming on a Mac",
+    "preview": "I have been pair programming for more than four years. One of the most basic things that you need to do is to find a way to share your screen, keyboard and mouse"
+  },
+  {
+    "title": "Hybrid Mobile App Development : Learning from experience",
+    "preview": "Building mobile apps is not a side dish anymore, it has become a part of the main course for businesses. Hybrid mobile apps (Javascript + Native) tick more proverbial checkboxes than pure native apps as far as a sales pitch is concerned for non graphics/game apps."
   }
 ]

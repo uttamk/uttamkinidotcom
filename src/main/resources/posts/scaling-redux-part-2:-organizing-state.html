@@ -1,0 +1,115 @@
+<div class="section-divider">
+    <hr class="section-divider">
+</div>
+<div class="section-content">
+    <div class="section-inner sectionLayout--insetColumn"><h3 name="3745" id="3745"
+                                                              class="graf graf--h3 graf--leading graf--title">Scaling
+        Redux part 2: Organizing State</h3>
+        <p name="7754" id="7754" class="graf graf--p graf-after--h3">In <a
+                href="https://medium.com/@uttamkini/scaling-redux-part-1-codebase-organization-80f978cd8a72"
+                data-href="https://medium.com/@uttamkini/scaling-redux-part-1-codebase-organization-80f978cd8a72"
+                class="markup--anchor markup--p-anchor" target="_blank">Scaling Redux part 1</a>, I described how
+            codebase organization by UI structure can help for a complex app. This post will focus on another important
+            aspect of how you design and organize the state tree.</p><h4 name="21f2" id="21f2"
+                                                                         class="graf graf--h4 graf-after--p">Arbitrary
+            organization</h4>
+        <p name="9b99" id="9b99" class="graf graf--p graf-after--h4">Redux forces you to organize all your state in a
+            single tree. When you are new to the framework, the easiest thing to do is to just keep adding state to the
+            top level state tree. This works for trivial tutorial applications but starts becoming a pain even for small
+            non trivial applications. For example, an arbitrary state tree can look like the following</p>
+        <pre name="e5a5" id="e5a5" class="graf graf--pre graf-after--p">{<br>  isUserSelectDropdownOpen: false,<br>  orders: [{id: 1, name: 'iphone 6'}, {id: 3, name: 'Ipad 2'}],<br>  users: [{id: 1, name: 'John Doe'}],<br>  isOrderFetchInProgress: true,     <br>  isUserFetchInProgress: true, <br>  isAccountFetchInProgress: true,<br>  isOrderError: false,<br>  isUserError: false,<br>  isAccountError: false<br>  accounts: [{id: 1, name: "Acme Inc"}]<br>  orderViewExpanded: true</pre>
+        <pre name="91c3" id="91c3" class="graf graf--pre graf-after--pre">}</pre>
+        <p name="9621" id="9621" class="graf graf--p graf-after--pre">When you are debugging, it becomes a pain to fish
+            through the state and find what you are looking for. The larger the app, the more pain. Your reducer code
+            also starts becoming bigger and hairier. Soon enough, you will see arbitrary actions flying around and
+            changing state.</p><h4 name="c866" id="c866" class="graf graf--h4 graf-after--p">Keep UI State and Data
+            State&nbsp;separate</h4>
+        <p name="308c" id="308c" class="graf graf--p graf-after--h4">If you choose to keep UI state (like <code
+                class="markup--code markup--p-code">isSomeDropDownOpen)</code> in redux and not in <code
+                class="markup--code markup--p-code">React.component.state</code>&nbsp;, then your state tree will be a
+            mixture of UI state and Data State (i.e. how the domain/api is structured from your backend).The above state
+            can be refactored to</p>
+        <pre name="abb9" id="abb9" class="graf graf--pre graf-after--p">{<br>  data: {<br>    orders: [{id: 1, name: 'iphone 6'}, {id: 3, name: 'Ipad 2'}],<br>    users: [{id: 1, name: 'John Doe'}],<br>    accounts: [{id: 1, name: "Acme Inc"}],<br>    isOrderFetchInProgress: true,     <br>    isUserFetchInProgress: true, <br>    isAccountFetchInProgress: true<br>    isOrderError: false,<br>    isUserError: false,<br>    isAccountError: false</pre>
+        <pre name="366d" id="366d" class="graf graf--pre graf-after--pre">  },</pre>
+        <pre name="1357" id="1357" class="graf graf--pre graf-after--pre">  ui:{ <br>   isUserSelectDropdownOpen: false,<br>   orderViewExpanded: true<br> }<br>}</pre>
+        <p name="5b0c" id="5b0c" class="graf graf--p graf-after--pre">The above tree has the following advantages<br>*
+            It is easier to navigate the state tree while reading the code or debugging</p>
+        <p name="b111" id="b111" class="graf graf--p graf-after--p">* It becomes trivial to cache the data across route
+            transitions (you can reset only ui state on route transitions)</p>
+        <p name="ed22" id="ed22" class="graf graf--p graf-after--p">* Any part of the UI can subscribe to any part of
+            the domain subtree (UI and data are loosely coupled)</p>
+        <p name="ead6" id="ead6" class="graf graf--p graf-after--p">However, Each subtree organization is still
+            arbitrary and for a complex app, navigating through it is still a pain.</p><h4 name="e744" id="e744"
+                                                                                           class="graf graf--h4 graf-after--p">
+            Organize UI State by UI Structure</h4>
+        <p name="1f3e" id="1f3e" class="graf graf--p graf-after--h4">As described in <a
+                href="https://medium.com/@uttamkini/scaling-redux-part-1-codebase-organization-80f978cd8a72"
+                data-href="https://medium.com/@uttamkini/scaling-redux-part-1-codebase-organization-80f978cd8a72"
+                class="markup--anchor markup--p-anchor" target="_blank">Scaling Redux part 1</a>, the ‘domain’ for your
+            single page app is the UI structure of the app (which may not be the same as your api/backend domain).
+            Organizing your state by UI structure makes it unambiguous to understand the code and the UI for anybody.
+            The above structure then becomes the following.</p>
+        <pre name="2365" id="2365" class="graf graf--pre graf-after--p">{<br>  data: {<br>    orders: [{id: 1, name: 'iphone 6'}, {id: 3, name: 'Ipad 2'}],<br>    users: [{id: 1, name: 'John Doe'}],<br>    accounts: [{id: 1, name: "Acme Inc"}],<br>    isOrderFetchInProgress: true,     <br>    isUserFetchInProgress: true, <br>    isAccountFetchInProgress: true<br>    isOrderError: false,<br>    isUserError: false,<br>    isAccountError: false</pre>
+        <pre name="81f0" id="81f0" class="graf graf--pre graf-after--pre">},</pre>
+        <pre name="7ce5" id="7ce5" class="graf graf--pre graf-after--pre">ui:{ <br>   account:{<br>      user: {<br>              isUserSelectDropdownOpen: false<br>      }<br>   },</pre>
+        <pre name="70fe" id="70fe"
+             class="graf graf--pre graf-after--pre">   order: {<br>     orderViewExpanded: true<br>   }<br> }<br>}</pre>
+        <p name="8645" id="8645" class="graf graf--p graf-after--pre">The above structure tells you a few things that
+            the previous structure did not. It tells you that the user ‘view’ is nested within the account ‘view’ and
+            you can infer the UI structure from the structure of the state and vice versa (You know which reducer to
+            look at for a part of the UI).</p><h4 name="f3bf" id="f3bf" class="graf graf--h4 graf-after--p">Organize
+            Data State by API Structure</h4>
+        <p name="14f8" id="14f8" class="graf graf--p graf-after--h4">The domain for the Data State is the structure of
+            the api/resources. Refactoring the data state subtree by the api structure gives you the following.</p>
+        <pre name="700b" id="700b" class="graf graf--pre graf-after--p">{<br>  data: {<br>    order: {<br>       objects:[{id: 1, name: 'iphone 6'}, {id: 3, name: 'Ipad 2'}],<br>       isFetchInProgress: true,<br>       isError: false<br>    },<br>   user: {<br>        objects: [{id: 1, name: 'John Doe'}],<br>        isError: false,<br>        isFetchInProgress: true,<br>    },</pre>
+        <pre name="d3a1" id="d3a1" class="graf graf--pre graf-after--pre">   account: { <br>        objects: [{id: 1, name: "Acme Inc"}],<br>        isError: false,<br>        isFetchInProgress: true,<br>    }</pre>
+        <pre name="c186" id="c186" class="graf graf--pre graf-after--pre">},</pre>
+        <pre name="5305" id="5305" class="graf graf--pre graf-after--pre">ui:{ <br>   account:{<br>      user: {<br>              isUserSelectDropdownOpen: false<br>      }<br>   },</pre>
+        <pre name="1edc" id="1edc" class="graf graf--pre graf-after--pre">order: {<br>      orderViewExpanded: true<br>   }<br> }<br>}</pre>
+        <p name="1b88" id="1b88" class="graf graf--p graf-after--pre">The above structure&nbsp;<br>* Keeps related state
+            together (all state related to Order api is kept together)</p>
+        <p name="dd2f" id="dd2f" class="graf graf--p graf-after--p">* It enforces a common naming convention in the data
+            state and makes in unambiguous.</p><h4 name="71fb" id="71fb" class="graf graf--h4 graf-after--p">Data Ducks
+            and UI&nbsp;Ducks</h4>
+        <p name="0612" id="0612" class="graf graf--p graf-after--h4">The <a
+                href="https://github.com/erikras/ducks-modular-redux"
+                data-href="https://github.com/erikras/ducks-modular-redux" class="markup--anchor markup--p-anchor"
+                rel="nofollow noopener noopener" target="_blank">Ducks pattern</a> helps you keep related abstractions
+            together in one file (see <a
+                    href="https://medium.com/@uttamkini/scaling-redux-part-1-codebase-organization-80f978cd8a72"
+                    data-href="https://medium.com/@uttamkini/scaling-redux-part-1-codebase-organization-80f978cd8a72"
+                    class="markup--anchor markup--p-anchor" target="_blank">Scaling Redux part 1</a>). With data state
+            separated from the UI state, you will now have ‘Data Ducks’ and ‘UI ducks’ i.e. reducers, actions and action
+            types related to a domain (eg. Order) in <code class="markup--code markup--p-code">OrderDataDuck.js</code>
+            and the ones related to UI state in <code class="markup--code markup--p-code">OrderDuck.js</code>. The
+            directory structure will look like the following.</p>
+        <pre name="7cf7" id="7cf7" class="graf graf--pre graf-after--p">├── App.js<br>├── RootReducer.js<br>├── data<br>│   ├── AccountDataDuck.js<br>│   ├── OrderDataDuck.js<br>│   └── UserDataDuck.js<br>└── ui<br>    ├── account<br>    │   ├── Account.js<br>    │   ├── AccountContainer.js<br>    │   ├── AccountDuck.js<br>    │   └── user<br>    │       ├── User.js<br>    │       ├── UserContainer.js<br>    │       └── UserDuck.js<br>    ├── footer<br>    │   └── Footer.js<br>    ├── header<br>    │   ├── Header.js<br>    │   ├── HeaderContainer.js<br>    │   └── HeaderDuck.js<br>    └── order<br>        ├── Order.js<br>        ├── OrderContainer.js<br>        └── OrderDuck.js</pre>
+        <ul class="postList">
+            <li name="63a3" id="63a3" class="graf graf--li graf-after--pre">Data Ducks go into a top level directory
+                called <code class="markup--code markup--li-code">data</code> and are organized by the api structure.
+            </li>
+            <li name="d2cb" id="d2cb" class="graf graf--li graf-after--li">The UI Ducks and components go into a top
+                level directory called <code class="markup--code markup--li-code">ui</code> and are organized by the UI
+                structure
+            </li>
+            <li name="abd7" id="abd7" class="graf graf--li graf-after--li">The data ducks are agnostic of the UI
+                components and are used like a library by the UI ducks to trigger and consume actions.
+            </li>
+            <li name="878c" id="878c" class="graf graf--li graf-after--li">This structure decouples the data/api/server
+                side domain from the UI structure/client side domain (<a
+                        href="https://en.wikipedia.org/wiki/Coupling_%28computer_programming%29"
+                        data-href="https://en.wikipedia.org/wiki/Coupling_(computer_programming)"
+                        class="markup--anchor markup--li-anchor" rel="noopener" target="_blank">loose coupling</a>)
+            </li>
+            <li name="c90f" id="c90f" class="graf graf--li graf-after--li">Within each directory (data and ui), all
+                related abstractions live close to one another (<a
+                        href="https://en.wikipedia.org/wiki/Cohesion_%28computer_science%29"
+                        data-href="https://en.wikipedia.org/wiki/Cohesion_(computer_science)"
+                        class="markup--anchor markup--li-anchor" rel="noopener" target="_blank">high cohesion</a>)
+            </li>
+        </ul>
+        <p name="9541" id="9541" class="graf graf--p graf-after--li graf--trailing">That ends this post. By now you will
+            be familiar with how to organize your codebase and state in Redux. There are still more things that you need
+            to be careful about if you want to want to scale a complex codebase in Redux. More coming up in future
+            posts.</p></div>
+</div>
