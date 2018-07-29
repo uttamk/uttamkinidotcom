@@ -16,7 +16,7 @@ defmodule UblogWeb.Router do
   scope "/", UblogWeb do
     pipe_through :browser # Use the default browser stack
 
-    get "/", PageController, :index
+    get "/", LandingPageController, :index
   end
 
   # Other scopes may use custom stacks.

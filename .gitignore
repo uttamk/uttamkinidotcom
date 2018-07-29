@@ -5,5 +5,8 @@
 gradle*
 .gradle
 build
+_build
 out
 .DS_Store
+.elixir_ls
+deps
